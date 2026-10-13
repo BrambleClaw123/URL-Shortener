@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>AWS Serverless URL Shortener</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 650px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+    .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    input { width: 72%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 10px 16px; background: #ff9900; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #e68a00; }
+    .result { margin-top: 15px; padding: 12px; background: #f4f8fb; border-left: 4px solid #0073bb; display: none; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h2>🔗 Dịch vụ Rút gọn URL (AWS Serverless)</h2>
+
+  <div class="card">
+    <h3>1. Tạo liên kết ngắn</h3>
+    <input type="url" id="longUrl" placeholder="Nhập URL gốc (VD: https://hcmute.edu.vn)..." required>
+    <button onclick="createShortLink()">Rút gọn</button>
+    <div id="createResult" class="result"></div>
+  </div>
+
+  <div class="card">
+    <h3>2. Tra cứu thống kê lượt Click</h3>
+    <input type="text" id="shortId" placeholder="Nhập mã short_id (VD: aB3x9Z)...">
+    <button onclick="getStats()">Xem thống kê</button>
+    <div id="statsResult" class="result"></div>
+  </div>
+
+  <script>
+    // THAY LINK API GATEWAY CỦA BẠN VÀO ĐÂY (Không có dấu / ở cuối)
+    const API_BASE_URL = "https://hfbustcxrb.execute-api.us-east-1.amazonaws.com/Prod";
+
+    async function createShortLink() {
+      const longUrl = document.getElementById('longUrl').value.trim();
+      const resBox = document.getElementById('createResult');
+      resBox.style.display = 'block';
+      resBox.innerHTML = 'Đang xử lý...';
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/links`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ long_url: longUrl })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          resBox.innerHTML = `
+            <b>Thành công!</b><br>
+            📌 Mã ID: <code>${data.short_id}</code><br>
+            🔗 Link rút gọn: <a href="${data.short_url}" target="_blank">${data.short_url}</a><br>
+            <small>(Hãy bấm thử vào link rút gọn rồi xuống mục 2 kiểm tra số lượt click!)</small>
+          `;
+          document.getElementById('shortId').value = data.short_id;
+        } else {
+          resBox.innerHTML = `<span style="color:red">Lỗi: ${data.error}</span>`;
+        }
+      } catch (err) {
+        resBox.innerHTML = `<span style="color:red">Lỗi kết nối API!</span>`;
+      }
+    }
+
+    async function getStats() {
+      const shortId = document.getElementById('shortId').value.trim();
+      const resBox = document.getElementById('statsResult');
+      resBox.style.display = 'block';
+      resBox.innerHTML = 'Đang tải...';
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/${shortId}/stats`);
+        const data = await res.json();
+        if (res.ok) {
+          const expDate = new Date(data.ttl_expire * 1000).toLocaleString('vi-VN');
+          resBox.innerHTML = `
+            📊 <b>Số lượt click: <span style="font-size: 1.3em; color: #d13212;">${data.clicks}</span></b><br>
+            🌐 URL gốc: <a href="${data.long_url}" target="_blank">${data.long_url}</a><br>
+            ⏳ Tự động xóa (TTL) vào: ${expDate}
+          `;
+        } else {
+          resBox.innerHTML = `<span style="color:red">${data.error}</span>`;
+        }
+      } catch (err) {
+        resBox.innerHTML = `<span style="color:red">Lỗi kết nối API!</span>`;
+      }
+    }
+  </script>
+</body>
+</html>
