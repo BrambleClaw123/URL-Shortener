@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: URL Shortener Serverless - HCMUTE Cloud Project
+
+Globals:
+  Function:
+    Timeout: 5
+    MemorySize: 128
+    Runtime: python3.12
+    # Yêu cầu đề bài: Đặt reserved concurrency <= 5
+    ReservedConcurrentExecutions: 5
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref UrlShortenerTable
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'*'"
+
+Resources:
+  # 1. Bảng DynamoDB lưu trữ Link và bộ đếm
+  UrlShortenerTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: UrlShortenerTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: short_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: short_id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl_expire
+        Enabled: true
+
+  # 2. Lambda 1: Tạo Short Link (POST /links)
+  CreateLinkFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: create.handler
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
+      Events:
+        CreateApi:
+          Type: Api
+          Properties:
+            Path: /links
+            Method: post
+
+  # 3. Lambda 2: Redirect 301 & Tăng lượt click (GET /{short_id})
+  RedirectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: redirect.handler
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
+      Events:
+        RedirectApi:
+          Type: Api
+          Properties:
+            Path: /{short_id}
+            Method: get
+
+  # 4. Lambda 3: Xem thống kê (GET /{short_id}/stats)
+  GetStatsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: stats.handler
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/LabRole"
+      Events:
+        StatsApi:
+          Type: Api
+          Properties:
+            Path: /{short_id}/stats
+            Method: get
+
+Outputs:
+  ApiEndpoint:
+    Description: "URL gốc của API Gateway (Copy link này dán vào Frontend)"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
