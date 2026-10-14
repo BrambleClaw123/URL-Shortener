@@ -30,9 +30,9 @@
   - File Worklog: [`docs/worklog-week1.md`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/worklog-week1.md)
 - Thiết kế và vẽ sơ đồ kiến trúc tổng thể (Architecture Diagram) của hệ thống URL Shortener serverless bằng Draw.io (2.5 giờ):
   - Link Draw.io: [Sơ đồ kiến trúc trên diagrams.net](https://app.diagrams.net/#G1PnCEu8wIO-ms-VwBoF0jS1jJMXiftU-_#%7B%22pageId%22%3A%22XV87qkZuxvu6hrgPSVqJ%22%7D)
-  - File sơ đồ lưu trên repo: [`docs/architecture-diagram.png`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/architecture-diagram.png)
+  - File sơ đồ lưu trên repo: [`docs/Tuan 1/architecture-diagram.png`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/Tuan%201/architecture-diagram.png)
 - Thiết kế API Contract theo chuẩn RESTful quy định cấu trúc Request/Response cho 3 endpoint `POST /links`, `GET /{short_id}` (HTTP 301 Redirect) và `GET /{short_id}/stats` (2.0 giờ):
-  - File tài liệu API Contract: [`docs/api-contract.md`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/api-contract.md)
+  - File tài liệu API Contract: [`docs/Tuan 1/api-contract.md`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/Tuan%201/api-contract.md)
 - Cài đặt môi trường phát triển local gồm Python/NodeJS, Docker, AWS CLI v2 (`aws-cli/2.37.9`), AWS SAM CLI (`version 1.166.2`) và cấu hình khóa xác thực kết nối với AWS Learner Lab (2.5 giờ).
 - Họp nhóm cùng kiểm tra kết nối thông mạng tới AWS bằng lệnh `aws sts get-caller-identity` và chốt kế hoạch triển khai code cho Tuần 2 (1.0 giờ).
 
@@ -40,9 +40,9 @@
 
 #### Sinh viên 2: Phạm Vĩ Cận (MSSV: 24110169)
 - Nghiên cứu tài liệu giới hạn tài nguyên của AWS Learner Lab và thống nhất quy định gắn nhãn Tagging với `Project = URLShortener`, `Owner = 24110237_24110169` để quản lý tài nguyên và phân loại chi phí trên AWS Billing (1.5 giờ):
-  - File quy ước cấu hình & Tagging: [`docs/tagging-and-limits.md`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/tagging-and-limits.md)
+  - File quy ước cấu hình & Tagging: [`docs/Tuan 1/tagging-and-limits.md`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/Tuan%201/tagging-and-limits.md)
 - Thiết kế cấu trúc cơ sở dữ liệu DynamoDB (`UrlShortenerTable`), xác định Partition Key `short_id` (String), các thuộc tính `long_url`, `clicks`, `created_at` và thuộc tính `ttl_expire` (Number - Unix epoch) phục vụ cơ chế TTL tự động xóa link hết hạn (2.5 giờ):
-  - File thiết kế DynamoDB Schema: [`docs/dynamodb-schema.md`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/dynamodb-schema.md)
+  - File thiết kế DynamoDB Schema: [`docs/Tuan 1/dynamodb-schema.md`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/Tuan%201/dynamodb-schema.md)
 - Truy cập AWS Management Console, cố định Region `us-east-1`, khảo sát quyền và trích xuất ARN của `LabRole` (`arn:aws:iam::487906062447:role/LabRole`), lấy thông tin AWS CLI Credentials cho nhóm (1.5 giờ).
 - Cài đặt môi trường phát triển local gồm Python/NodeJS, Docker, AWS CLI v2, AWS SAM CLI và cấu hình khóa xác thực trên máy cá nhân (2.5 giờ).
 - Họp nhóm kiểm tra kết nối AWS CLI bằng lệnh `aws sts get-caller-identity` và thống nhất phân chia công việc viết hàm Lambda cho Tuần 2 (1.0 giờ).
