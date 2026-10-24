@@ -26,7 +26,7 @@ Mỗi mục dữ liệu (Item) được lưu trữ trong bảng `UrlShortenerTab
 | `short_id` | `String` (`S`) | **Partition Key** | Mã định danh duy nhất của liên kết rút gọn (ví dụ: `xY7z9`). Dùng để tra cứu trực tiếp khi chuyển hướng hoặc xem thống kê. |
 | `long_url` | `String` (`S`) | Attribute | Đường dẫn URL gốc ban đầu của người dùng cần rút gọn (ví dụ: `https://aws.amazon.com/dynamodb/`). |
 | `clicks` | `Number` (`N`) | Attribute | Bộ đếm tổng số lượt truy cập vào liên kết rút gọn. Mặc định khi mới tạo bản ghi có giá trị là `0`. |
-| `created_at` | `String` (`S`) | Attribute | Thời điểm khởi tạo liên kết theo chuẩn định dạng ISO 8601 (ví dụ: `2026-10-15T10:00:00Z`). |
+| `created_at` | `Number` (`N`) | Attribute | Thời điểm khởi tạo liên kết được biểu diễn dưới dạng Unix epoch timestamp tính bằng giây (ví dụ: `1729742400`). |
 | `ttl_expire` | `Number` (`N`) | **TTL Attribute** | Thời điểm liên kết hết hạn được biểu diễn dưới dạng Unix epoch timestamp tính bằng giây (ví dụ: `1735689600`). |
 
 ---
@@ -35,19 +35,21 @@ Mỗi mục dữ liệu (Item) được lưu trữ trong bảng `UrlShortenerTab
 
 Dưới đây là cấu trúc một bản ghi mẫu lưu trong bảng `UrlShortenerTable`:
 
-    {
-      "short_id": "xY7z9",
-      "long_url": "https://aws.amazon.com/dynamodb/",
-      "clicks": 42,
-      "created_at": "2026-10-15T10:00:00Z",
-      "ttl_expire": 1735689600
-    }
+```json
+{
+  "short_id": "xY7z9",
+  "long_url": "[https://aws.amazon.com/dynamodb/](https://aws.amazon.com/dynamodb/)",
+  "clicks": 42,
+  "created_at": 1729742400,
+  "ttl_expire": 1735689600
+}
+```
 
 ---
 
 ## 4. Cơ Chế Tự Động Xóa Liên Kết Hết Hạn (DynamoDB TTL)
 
-- **Nguyên lý hoạt động:** Tính năng **Time-To-Live (TTL)** của Amazon DynamoDB được kích hoạt trên thuộc tính `ttl_expire`. Khi thời gian hiện tại vượt quá giá trị Unix epoch timestamp lưu trong `ttl_expire` (tương ứng với trường `expires_at` trả về cho người dùng khi tạo link), DynamoDB sẽ tự động đánh dấu và xóa bản ghi đó khỏi bảng mà không tốn chi phí đọc/ghi hay cần hàm Lambda dọn dẹp riêng.
+- **Nguyên lý hoạt động:** Tính năng **Time-To-Live (TTL)** của Amazon DynamoDB được kích hoạt trên thuộc tính `ttl_expire`. Khi thời gian hiện tại vượt quá giá trị Unix epoch timestamp lưu trong `ttl_expire`, DynamoDB sẽ tự động đánh dấu và xóa bản ghi đó khỏi bảng mà không tốn chi phí đọc/ghi hay cần hàm Lambda dọn dẹp riêng.
 - **Lưu ý xử lý ở tầng ứng dụng (Lambda `RedirectLink`):** Do quá trình xóa bản ghi hết hạn của DynamoDB TTL diễn ra ở chế độ nền (background process) nên có thể có độ trễ nhất định sau thời điểm hết hạn. Khi triển khai hàm `RedirectLink`, hệ thống sẽ kiểm tra thêm điều kiện thời gian hiện tại so với `ttl_expire` trước khi thực hiện chuyển hướng để đảm bảo tính chính xác.
 
 ---
@@ -58,4 +60,4 @@ Dưới đây là cấu trúc một bản ghi mẫu lưu trong bảng `UrlShorte
 | :-: | :--- | :--- | :--- | :--- |
 | 1 | Tạo short link | `CreateLink` | `PutItem` | Ghi bản ghi mới với khóa `short_id`, gán `clicks = 0`, lưu `long_url`, `created_at` và `ttl_expire`. |
 | 2 | Chuyển hướng link | `RedirectLink` | `GetItem` / `UpdateItem` | Tra cứu bản ghi theo `short_id`, cộng nguyên tử (atomic counter) thuộc tính `clicks` thêm `1` và lấy `long_url` để trả về HTTP `301`. |
-| 3 | Xem thống kê click | `GetStats` | `GetItem` | Truy vấn bản ghi theo Partition Key `short_id` để lấy `long_url` và tổng số `clicks` hiện tại. |
+| 3 | Xem thống kê click | `GetStats` | `GetItem` | Truy vấn bản ghi theo Partition Key `short_id` để lấy toàn bộ thông tin bao gồm `long_url`, thời gian tạo/hết hạn và tổng số `clicks`. |

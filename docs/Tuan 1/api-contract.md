@@ -32,22 +32,26 @@ Tiếp nhận URL gốc từ người dùng, sinh mã định danh `short_id`, l
   - `Content-Type: application/json`
 - **Body Request (từ Frontend gửi lên):**
 
-        {
-          "long_url": "https://aws.amazon.com/dynamodb/"
-        }
+```json
+{
+  "long_url": "[https://aws.amazon.com/dynamodb/](https://aws.amazon.com/dynamodb/)"
+}
+```
 
 - **Response Thành Công (`200 OK`):**
 
-        {
-          "short_id": "xY7z9",
-          "short_url": "https://<api-id>.execute-api.us-east-1.amazonaws.com/prod/xY7z9",
-          "expires_at": 1735689600
-        }
+```json
+{
+  "short_id": "xY7z9",
+  "short_url": "https://<api-id>[.execute-api.us-east-1.amazonaws.com/prod/xY7z9](https://.execute-api.us-east-1.amazonaws.com/prod/xY7z9)",
+  "ttl_expire": 1735689600
+}
+```
 
 - **Ý nghĩa các trường phản hồi:**
   - `short_id` (`String`): Mã định danh của liên kết rút gọn vừa được tạo.
   - `short_url` (`String`): Đường dẫn rút gọn hoàn chỉnh dùng để chia sẻ và truy cập.
-  - `expires_at` (`Number`): Thời điểm liên kết hết hạn theo chuẩn Unix epoch tính bằng giây (tương ứng với thuộc tính `ttl_expire` trong DynamoDB).
+  - `ttl_expire` (`Number`): Thời điểm liên kết hết hạn theo chuẩn Unix epoch tính bằng giây.
 
 ---
 
@@ -58,12 +62,15 @@ Tra cứu bản ghi theo `short_id` trong bảng `UrlShortenerTable`, tăng bộ
 - **Method:** `GET`
 - **Endpoint:** `/{short_id}` *(Ví dụ: `/xY7z9`)*
 - **Path Parameters:**
-  - `short_id` (`String` - bắt buộc): Mã định danh của liên kết rút gọn.
+  - `short_id` (`String` bắt buộc): Mã định danh của liên kết rút gọn.
 - **Response Thành Công (`301 Moved Permanently`):**
   - **Body:** Không trả về JSON.
   - **HTTP Headers:**
 
-        Location: https://aws.amazon.com/dynamodb/
+```http
+Location: [https://aws.amazon.com/dynamodb/](https://aws.amazon.com/dynamodb/)
+Cache-Control: no-cache, no-store, must-revalidate
+```
 
   - **Hành vi:** Trình duyệt nhận mã `301` cùng header `Location` sẽ tự động chuyển hướng sang trang đích (`long_url`).
 
@@ -71,21 +78,27 @@ Tra cứu bản ghi theo `short_id` trong bảng `UrlShortenerTable`, tăng bộ
 
 ### API 3: Xem thống kê lượt click (`GetStats`)
 
-Truy vấn thông tin từ bảng `UrlShortenerTable` theo `short_id` và trả về địa chỉ gốc kèm tổng số lượt truy cập hiện tại.
+Truy vấn thông tin từ bảng `UrlShortenerTable` theo `short_id` và trả về toàn bộ dữ liệu của bản ghi.
 
 - **Method:** `GET`
 - **Endpoint:** `/{short_id}/stats` *(Ví dụ: `/xY7z9/stats`)*
 - **Path Parameters:**
-  - `short_id` (`String` - bắt buộc): Mã định danh của liên kết rút gọn cần tra cứu thống kê.
+  - `short_id` (`String` bắt buộc): Mã định danh của liên kết rút gọn cần tra cứu thống kê.
 - **Response Thành Công (`200 OK`):**
 
-        {
-          "short_id": "xY7z9",
-          "long_url": "https://aws.amazon.com/dynamodb/",
-          "clicks": 42
-        }
+```json
+{
+  "short_id": "xY7z9",
+  "long_url": "[https://aws.amazon.com/dynamodb/](https://aws.amazon.com/dynamodb/)",
+  "clicks": 42,
+  "created_at": 1729742400,
+  "ttl_expire": 1735689600
+}
+```
 
 - **Ý nghĩa các trường phản hồi:**
   - `short_id` (`String`): Mã định danh của liên kết rút gọn.
   - `long_url` (`String`): Đường dẫn URL gốc ban đầu của người dùng.
   - `clicks` (`Number`): Tổng số lượt truy cập vào liên kết rút gọn.
+  - `created_at` (`Number`): Thời điểm tạo liên kết (Unix epoch).
+  - `ttl_expire` (`Number`): Thời điểm liên kết tự động hết hạn (Unix epoch).

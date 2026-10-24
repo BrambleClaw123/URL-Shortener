@@ -31,6 +31,11 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: ttl_expire
         Enabled: true
+      Tags:
+      - Key: Project
+        Value: URLShortener
+      - Key: Owner
+        Value: 2411023724110169
   CreateLinkFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -76,9 +81,45 @@ Resources:
             Method: get
     Metadata:
       SamResourceId: GetStatsFunction
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: url-shortener-frontend-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+      Tags:
+      - Key: Project
+        Value: URLShortener
+      - Key: Owner
+        Value: 2411023724110169
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: FrontendBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: PublicReadGetObject
+          Effect: Allow
+          Principal: '*'
+          Action: s3:GetObject
+          Resource:
+            Fn::Sub: arn:aws:s3:::${FrontendBucket}/*
 Outputs:
   ApiEndpoint:
-    Description: "URL g\u1ED1c c\u1EE7a API Gateway (Copy link n\xE0y d\xE1n v\xE0\
-      o Frontend)"
+    Description: URL API Gateway
     Value:
       Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
+  WebsiteURL:
+    Description: URL S3 Frontend
+    Value:
+      Fn::GetAtt:
+      - FrontendBucket
+      - WebsiteURL
