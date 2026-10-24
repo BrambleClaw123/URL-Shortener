@@ -30,7 +30,7 @@
 - Đóng gói, cập nhật hạ tầng (`sam deploy`) và trích xuất chỉ số giám sát từ hệ thống CloudWatch Metrics đo lường Invocations với Statistic: Sum (2.5 giờ):
   - Ảnh minh chứng biểu đồ CloudWatch Metrics: [`docs/Tuan 3/metrics.png`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/Tuan%203/metrics.png)
 - Cùng kiểm tra Billing and Cost Management chốt chi phí vận hành tuần 3 (1.5 giờ):
-  - Ảnh minh chứng Cost Summary ($0.00): [`docs/Tuan 3/hinh3-5_billing.png`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/Tuan%203/billing.png)
+  - Ảnh minh chứng Cost Summary ($0.00): [`docs/Tuan 3/billing.png`](https://github.com/BrambleClaw123/URL-Shortener/blob/main/docs/Tuan%203/billing.png)
 
 ---
 
@@ -51,3 +51,4 @@
 - **Cảnh báo Cold Start:** Nhóm đã quan sát được thời gian `Billed Duration` bị đội lên trong lần chạy đầu tiên (Cold Start). Sẽ lưu ý vấn đề này khi thực hiện test hiệu năng/throttling ở Tuần 4.
 - **Rà soát Tags:** Mới chỉ thực hiện tag cho DynamoDB và S3. Sẽ tiến hành rà soát để đảm bảo API Gateway và Lambda cũng được gắn tag chính xác trong Tuần 4.
 - **Test chịu tải:** Hiện tại `Reserved Concurrency` đang khóa ở 5. Tuần tới nhóm sẽ chạy tool đẩy nhiều request cùng lúc để ép xuất hiện lỗi `429 Too Many Requests` (Throttling) phục vụ báo cáo.
+- **Cải tiến tính năng nâng cao (Unit Test & Metrics):** Sẽ viết mã Unit Test cho hàm tạo rút gọn URL để kiểm thử bắt lỗi các trường hợp biên (nhập URL chứa khoảng trắng, unicode, hoặc ký tự đặc biệt). Đồng thời, cấu hình thêm Custom Metric trên CloudWatch để ghi nhận chính xác lượt đếm truy cập mỗi link ghi vào DynamoDB.
