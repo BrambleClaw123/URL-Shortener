@@ -11,6 +11,9 @@ Globals:
     Environment:
       Variables:
         TABLE_NAME: !Ref UrlShortenerTable
+    Tags:
+      Project: URLShortener
+      Owner: "24110237_24110169"
   Api:
     Cors:
       AllowMethods: "'GET,POST,OPTIONS'"
@@ -37,7 +40,7 @@ Resources:
         - Key: Project
           Value: URLShortener
         - Key: Owner
-          Value: 24110237_24110169
+          Value: "24110237_24110169"
 
   # 2. Lambda 1: Tạo Short Link
   CreateLinkFunction:
@@ -97,7 +100,7 @@ Resources:
         - Key: Project
           Value: URLShortener
         - Key: Owner
-          Value: 24110237_24110169
+          Value: "24110237_24110169"
 
   # 6. Mở quyền Public Read cho Bucket
   FrontendBucketPolicy:
