@@ -11,6 +11,9 @@ Globals:
       Variables:
         TABLE_NAME:
           Ref: UrlShortenerTable
+    Tags:
+      Project: URLShortener
+      Owner: '24110237_24110169'
   Api:
     Cors:
       AllowMethods: '''GET,POST,OPTIONS'''
@@ -35,7 +38,7 @@ Resources:
       - Key: Project
         Value: URLShortener
       - Key: Owner
-        Value: 2411023724110169
+        Value: '24110237_24110169'
   CreateLinkFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -97,7 +100,7 @@ Resources:
       - Key: Project
         Value: URLShortener
       - Key: Owner
-        Value: 2411023724110169
+        Value: '24110237_24110169'
   FrontendBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:

@@ -3,13 +3,12 @@ import os
 import boto3
 
 dynamodb = boto3.resource('dynamodb')
+cloudwatch = boto3.client('cloudwatch') # Khởi tạo client CloudWatch
 table = dynamodb.Table(os.environ['TABLE_NAME'])
 
 def handler(event, context):
     short_id = event['pathParameters']['short_id']
-
     try:
-        # Kiểm tra tồn tại và tăng bộ đếm clicks lên 1 nguyên tử (Atomic)
         response = table.update_item(
             Key={'short_id': short_id},
             UpdateExpression='ADD clicks :inc',
@@ -18,24 +17,24 @@ def handler(event, context):
             ReturnValues='ALL_NEW'
         )
         long_url = response['Attributes']['long_url']
+        
+        # Đẩy Custom Metric lên CloudWatch
+        cloudwatch.put_metric_data(
+            Namespace='URLShortener/Metrics',
+            MetricData=[{
+                'MetricName': 'TotalLinkClicks',
+                'Dimensions': [{'Name': 'Action', 'Value': 'Redirect'}],
+                'Value': 1,
+                'Unit': 'Count'
+            }]
+        )
 
         return {
             'statusCode': 301,
             'headers': {
                 'Location': long_url,
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': ''
-        }
-    except dynamodb.meta.client.exceptions.ConditionalCheckFailedException:
-        return {
-            'statusCode': 404,
-            'headers': {'Content-Type': 'text/plain; charset=utf-8'},
-            'body': 'Liên kết không tồn tại hoặc đã hết hạn (TTL)!'
+                'Cache-Control': 'no-cache'
+            }
         }
     except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': str(e)})
-        }
+        return {'statusCode': 500, 'body': str(e)}
